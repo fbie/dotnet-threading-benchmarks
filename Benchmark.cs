@@ -4,6 +4,7 @@
 // and Interlocked.CompareExchange(), based on microbenchmarking code by
 // Peter Sestoft.
 //
+// flbm@simcorp.com * 2019-11-13
 // fbie@itu.dk * 2018-01-23
 // sestoft@itu.dk * 2013-06-02, 2015-05-08
 
@@ -15,6 +16,8 @@ using System.Threading.Tasks;
 class Benchmark {
   public static void Main(String[] args) {
     SystemInfo();
+
+    // Lazy values
     Mark8("lazy-create", d => {
         Lazy<int> l = new Lazy<int>(() => 42);
         return 0;
@@ -32,6 +35,7 @@ class Benchmark {
         return l.Value;
       });
 
+    // Parallel tasks.
     Mark8("task-create", d => {
         Task<int> t = new Task<int>(() => 23);
         return d;
@@ -49,6 +53,7 @@ class Benchmark {
     }
     Process.GetCurrentProcess().ProcessorAffinity = affinity;
 
+    // Locking.
     object o = new object();
     int i = 0;
     Mark8("lock", d => {
@@ -57,6 +62,8 @@ class Benchmark {
         }
         return i;
       });
+
+    // CAS.
     object m = new object();
     Mark8("cas-success", d => {
         Interlocked.CompareExchange(ref m, m, o);
@@ -67,6 +74,15 @@ class Benchmark {
         return 666;
       });
 
+    // Closures and lambdas.
+    Mark8("call-closure", d => {
+        Func<double> f = () => d + 1;
+        return f();
+      });
+    Mark8("call-lambda", d => {
+        Func<double, double> f = d0 => d0 + 1;
+        return f(d);
+      });
   }
 
   // ========== Infrastructure code ==========

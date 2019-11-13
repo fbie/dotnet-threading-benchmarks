@@ -1,13 +1,15 @@
 # Benchmarking .Net Threading Primitives #
 
-Last updated by fbie@itu.dk, 2018-02-27.
+Last updated by flbm@simcorp.com, 2019-11-13.
 
 A small set of benchmarks to determine the cost of
 
 1. Initializing and computing `Lazy<T>` objects with different thread-safety settings;
 2. Initializing and running `Task<T>` objects;
-3. Primitive locking; and
-4. Succeeding and Failing calls to `Interlocked.CompareExchange()`.
+3. Primitive locking;
+4. Succeeding and Failing calls to `Interlocked.CompareExchange()`; and
+5. Creating and calling a closure and a lambda.
+
 
 Both, the computations in `Lazy<T>` and `Task<T>` from 1. and 2. only return constant values.
 
@@ -28,7 +30,33 @@ On Windows:
 ```
 
 
-# Results #
+# Results (2019) #
+
+Windows 10, Intel Xeon, .NET 4.6
+
+```
+# OS          Microsoft Windows NT 6.2.9200.0
+# .NET vers.  4.0.30319.42000
+# 64-bit OS   True
+# 64-bit proc True
+# CPU         Intel64 Family 6 Model 63 Stepping 2, GenuineIntel; 8 "cores"
+# Date        2019-11-13T15:08:29
+lazy-create                          25,4 ns       0,73   16777216
+lazy-compute                        103,3 ns       6,00    4194304
+lazy-compute-pub                     80,9 ns       2,23    4194304
+lazy-compute-ex&pub                 105,6 ns       4,68    4194304
+task-create                          61,5 ns       4,81    4194304
+task-run-2                          387,5 ns      44,07    1048576
+task-run-4                          261,0 ns       5,83    1048576
+task-run-8                          547,0 ns      51,45     524288
+lock                                 30,9 ns       1,86   16777216
+cas-success                          11,0 ns       0,56   33554432
+cas-fail                             11,2 ns       0,51   33554432
+call-closure                         31,6 ns       1,53    8388608
+call-lambda                          17,4 ns       1,17   16777216
+```
+
+# Results (2018) #
 
 On Ubuntu 16.04 + Mono JIT compiler version 5.4.1.7, Intel i7:
 
